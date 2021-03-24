@@ -1,51 +1,46 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"io"
-	"os"
-	"strconv"
-	"strings"
-)
+import "fmt"
+import "bufio"
+import "os"
+import "strings"
+import "strconv"
 
-type person struct {
-	fname string
-	lname string
+var i, j int
+
+func BubbleSorta(sli []int) {
+	n := len(sli)
+	for i = 0; i < n-1; i++ {
+		for j = 0; j < n-i-1; j++ {
+			if sli[j] > sli[j+1] {
+				Swap(sli, j)
+			}
+		}
+	}
+}
+
+func Swap(sli []int, index int) {
+	sli[index], sli[index+1] = sli[index+1], sli[index]
 }
 
 func main() {
-	var slicePersons []person
+	fmt.Printf("Enter integers splitted by space: ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	input := scanner.Text()
+	integers_str := strings.Split(input, " ")
+	integers := make([]int, len(integers_str))
 
-	var fileName string
-	fmt.Println("Enter name of the file to read: ")
-	fmt.Scan(&fileName)
-	f, err := os.Open(fileName)
-	defer f.Close()
-	if err != nil {
-		fmt.Println(err)
+	for i, v := range integers_str {
+		integers[i], _ = strconv.Atoi(v)
 	}
 
-	reader := bufio.NewReader(f)
-
-	for {
-		line, _, err := reader.ReadLine()
-		if err == io.EOF {
-			break
-		}
-		sline := string(line)
-		slineSplit := strings.Split(sline, " ")
-		if len(slineSplit[0]) > 20 || len(slineSplit[1]) > 20 {
-			fmt.Println("Length of first or last name is more than 20 characters")
-			os.Exit(1)
-		}
-		slicePersons = append(slicePersons, person{slineSplit[0], slineSplit[1]})
-	}
-
-	for i, v := range slicePersons {
-		fmt.Printf("Name of person %s:\n", strconv.Itoa(i+1))
-		fmt.Printf("first name: %s\n", v.fname)
-		fmt.Printf("last name: %s\n", v.lname)
+	BubbleSorta(integers)
+	fmt.Printf("result: ")
+	for _, v := range integers {
+		int_str := strconv.Itoa(v)
+		fmt.Printf(int_str)
+		fmt.Printf(" ")
 	}
 
 }
