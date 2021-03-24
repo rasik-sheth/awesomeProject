@@ -1,4 +1,4 @@
-package main
+package mainx
 
 import (
 	"fmt"
@@ -13,21 +13,21 @@ func slice() {
 		var st string
 		fmt.Scan(&st)
 
-		if( st == "x"){
-			break;
-		} else{
+		if st == "x" {
+			break
+		} else {
 			val, err := strconv.Atoi(st)
-			if(err == nil){
+			if err == nil {
 				//use append instead, append takes care of resizing if needed
 				sl = append(sl, val)
 				sort.Ints(sl)
 
 				fmt.Print("Sorted:  ")
-				for _,v := range sl{
+				for _, v := range sl {
 					fmt.Printf(" %d", v)
 				}
 
-			} else{
+			} else {
 				fmt.Println("Not a valid number")
 			}
 		}

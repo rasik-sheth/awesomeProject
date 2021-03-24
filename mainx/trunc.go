@@ -1,4 +1,4 @@
-package main
+package mainx
 
 import (
 	"fmt"
@@ -11,13 +11,13 @@ func trunc() {
 		var st string
 		fmt.Scan(&st)
 
-		if( st == "x"){
-			break;
-		} else{
-			val, err := strconv.ParseFloat(st,64)
-			if(err == nil){
+		if st == "x" {
+			break
+		} else {
+			val, err := strconv.ParseFloat(st, 64)
+			if err == nil {
 				fmt.Printf("Truncated number is %d", int(val))
-			} else{
+			} else {
 				fmt.Println("Not a valid number or a float")
 			}
 		}

@@ -1,4 +1,4 @@
-package main
+package mainx
 
 import "fmt"
 
@@ -19,4 +19,4 @@ func closure() {
 }
 func fz(int) string {
 	return ""
-} 
+}

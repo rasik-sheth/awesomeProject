@@ -1,5 +1,4 @@
-package main
-
+package mainx
 
 import (
 	"bufio"
@@ -7,7 +6,6 @@ import (
 	"os"
 	"strings"
 )
-
 
 func mainx() {
 
@@ -28,5 +26,3 @@ func mainx() {
 		fmt.Println("Not Found!")
 	}
 }
-
-
