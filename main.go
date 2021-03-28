@@ -2,120 +2,62 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"time"
+
+	"sync"
 )
 
-type ChopSticks struct {
-	sno   int
-	inuse sync.Mutex
+var eatWgroup sync.WaitGroup
+
+type fork struct{ sync.Mutex }
+
+type philosopher struct {
+	id                  int
+	leftFork, rightFork *fork
 }
 
-type Philo struct {
-	sno             int
-	left, right     *ChopSticks
-	times           int
-	responseChannel chan bool
-}
+func (p philosopher) eat() {
+	defer eatWgroup.Done()
+	for j := 0; j < 3; j++ {
+		p.leftFork.Lock()
+		p.rightFork.Lock()
 
-type Host struct {
-	activeEaterCount int
-	philoDoneEating  int
-}
+		say("eating", p.id)
+		time.Sleep(time.Second)
 
-func (p Philo) eat() {
-	fmt.Printf("\nstarting to eat %d", p.sno)
-	fmt.Printf("\nfinishing eating %d", p.sno)
-}
+		p.rightFork.Unlock()
+		p.leftFork.Unlock()
 
-const noOfPhilo = 5
-const noOfTimes = 3
-
-func PhiloRoutine(wg *sync.WaitGroup, p *Philo, requestChannel chan Philo, releaseChannel chan Philo) {
-	defer wg.Done()
-	for {
-		select {
-		case allowedToEat := <-p.responseChannel:
-			if allowedToEat {
-				p.eat()
-				p.times++
-				releaseChannel <- *p
-				if p.times == noOfTimes {
-					fmt.Printf("\n ### Philosopher  %d [ate 3 times] ", p.sno)
-					return
-				}
-			} else {
-				fmt.Printf("\nEat request not granted %d", p.sno)
-			}
-		case requestChannel <- *p:
-			//fmt.Println("\nEat request submitted ", p.sno)
-		default:
-			time.Sleep(20 * time.Millisecond)
-		}
-
+		say("finished eating", p.id)
+		time.Sleep(time.Second)
 	}
+
 }
 
-func hostRequestRoutine(wg *sync.WaitGroup, host *Host, requestChannel chan Philo) {
-	wg.Done()
-	for {
-		p := <-requestChannel
-		if host.activeEaterCount < 2 {
-			p.left.inuse.Lock()
-			p.right.inuse.Lock()
-			p.responseChannel <- true
-			host.activeEaterCount++
-		} else {
-			fmt.Println("*** 2 eaters already active *** ")
-			p.responseChannel <- false
-		}
-	}
-}
-
-func hostResponseRoutine(wg *sync.WaitGroup, host *Host, requestChannel chan Philo, releaseChannel chan Philo) {
-	wg.Done()
-	for {
-		p := <-releaseChannel
-		p.left.inuse.Unlock()
-		p.right.inuse.Unlock()
-		host.activeEaterCount--
-		if p.times == noOfTimes {
-			host.philoDoneEating++
-			if host.philoDoneEating == noOfPhilo {
-				close(releaseChannel)
-				close(requestChannel)
-				return
-			}
-		}
-	}
+func say(action string, id int) {
+	fmt.Printf("Philosopher #%d is %s\n", id+1, action)
 }
 
 func main() {
-	wg := &sync.WaitGroup{}
-	requestChannel := make(chan Philo)
-	releaseChannel := make(chan Philo)
-	h := new(Host)
+	// How many philosophers and forks
 
-	wg.Add(1)
-	go hostRequestRoutine(wg, h, requestChannel)
+	count := 5
 
-	wg.Add(1)
-	go hostResponseRoutine(wg, h, requestChannel, releaseChannel)
-
-	var chopStix = [5]ChopSticks{}
-	for i := 0; i < 5; i++ {
-		chopStix[i] = ChopSticks{sno: i}
+	// Create forks
+	forks := make([]*fork, count)
+	for i := 0; i < count; i++ {
+		forks[i] = new(fork)
 	}
 
-	for i := 0; i < 5; i++ {
-		p := new(Philo)
-		p.responseChannel = make(chan bool)
-		p.sno = i
-		p.left = &chopStix[i]
-		p.right = &chopStix[(i+1)%5]
-		p.times = 0
-		wg.Add(1)
-		go PhiloRoutine(wg, p, requestChannel, releaseChannel)
+	// Create philospoher, assign them 2 forks and send them to the dining table
+	philosophers := make([]*philosopher, count)
+	for i := 0; i < count; i++ {
+		philosophers[i] = &philosopher{
+			id: i, leftFork: forks[i], rightFork: forks[(i+1)%count]}
+		eatWgroup.Add(1)
+		go philosophers[i].eat()
+
 	}
-	wg.Wait()
+	eatWgroup.Wait()
+
 }

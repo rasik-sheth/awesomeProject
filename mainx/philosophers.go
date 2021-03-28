@@ -90,7 +90,7 @@ func hostResponseRoutine(wg *sync.WaitGroup, host *Host, requestChannel chan Phi
 	}
 }
 
-func Mainp() {
+func main() {
 	wg := &sync.WaitGroup{}
 	requestChannel := make(chan Philo)
 	releaseChannel := make(chan Philo)
