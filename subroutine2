@@ -1,0 +1,55 @@
+// _Channels_ are the pipes that connect concurrent
+// goroutines. You can send values into channels from one
+// goroutine and receive those values into another
+// goroutine.
+
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func b(zz chan string) {
+	for {
+
+		select {
+			case msg:= <-zz:
+				fmt.Println("A"+msg)
+
+		}
+		time.Sleep(time.Second)
+	}
+}
+
+func a(zz chan string) {
+
+	for {
+
+		select {
+		case msg:= <-zz:
+			fmt.Println("B"+msg)
+
+		}
+		time.Sleep(time.Second)
+	}
+}
+
+func z() {
+	messages := make(chan string)
+	go a(messages)
+	go b(messages)
+
+	for x := 0; x < 5; x++ {
+		messages <- "u"
+	}
+
+}
+
+//Demonstrates one channel but 2 receivers, only one of them gets it but not all.
+
+func main() {
+	z()
+	fmt.Print("Z is returned")
+	time.Sleep(time.Second * 40)
+}
